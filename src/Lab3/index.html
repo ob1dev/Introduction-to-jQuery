@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <style>
+    body {
+      font-family: Verdana;
+    }
+
+    h1, h2, h3 {
+      color: darkblue;
+    }
+
+    .rating-circle {
+      height: 2em;
+      width: 2em;
+      border: .1em solid black;
+      border-radius: 1.1em;
+      display: inline-block;
+      margin: 0;
+      padding: .1em;
+    }
+
+    .rating-hover {
+      background-color: yellow;
+    }
+
+    .rating-chosen {
+      background-color: green;
+    }
+  </style>
+
+</head>
+<body>
+
+  <h1>Contoso Web Developer Conference</h1>
+  <h2>Finding elements using jQuery</h2>
+  <div>This session is about identifying elements using jQuery methods and selectors.</div>
+  <h3>Rate this session</h3>
+  <div id="rating-container" max-value="5" set-value="0"></div>
+
+  <div>
+    <label for="max-value">Enter max value:</label>
+    <input type="text" id="max-value" />
+    <button type="button" id="update-max-value">Update max value</button>
+  </div>
+
+  <div>
+    <button type="button" id="save-rating">Save rating</button>
+  </div>
+  <div id="output"></div>
+
+  <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+
+  <script>
+    $(document).ready(function ()
+    {
+      var $ratingContainer = $('#rating-container');
+
+      // Render rating control with default max value.
+      var defaultMaxValue = $ratingContainer.attr('max-value');
+      renderRatingControl(defaultMaxValue);
+
+      // Update rating control with a new max value.
+      $('#update-max-value').click(function ()
+      {
+        var newMaxValue = $('#max-value').val()
+        renderRatingControl(newMaxValue);
+      });
+
+      // Save rating control value.
+      $('#save-rating').click(function ()
+      {
+        var url = 'http://jquery-edx.azurewebsites.net/api/Rating';
+
+        var rating = {
+          value: $ratingContainer.attr('set-value'),
+          maxValue: $ratingContainer.attr('max-value')
+        };
+
+        $.post(url, rating, function (data)
+        {
+          $('#output').text(data.message);
+        });
+
+      });
+
+      // Assign behaviour on rating's cycles.
+
+      // Mouse enter on a rating circle event.
+      $ratingContainer.on('mouseenter', '.rating-circle', function ()
+      {
+        $ratingContainer.children().removeClass('rating-chosen');
+        setRating('rating-hover', $ratingContainer.children().index(this), false);
+      });
+
+      // Mouse out on a rating circle event.
+      $ratingContainer.on('mouseout', '.rating-circle', function ()
+      {
+        $ratingContainer.children().removeClass('rating-hover');
+
+        var setValue = $ratingContainer.attr('set-value') - 1;
+        if (setValue != 0)
+        {
+          setRating('rating-chosen', setValue, false);
+        }
+      });
+
+      // Click on a rating circle event.
+      $ratingContainer.on('click', '.rating-circle', function ()
+      {
+        var selectedRating = $ratingContainer.children().index(this);
+        setRating('rating-chosen', selectedRating, true);
+      });
+
+      // Help functions.
+      function renderRatingControl(maxValue)
+      {
+        $ratingContainer.empty();
+        $ratingContainer.attr('set-value', 0);
+        $ratingContainer.attr('max-value', maxValue);
+
+        for (var index = 0; index < maxValue; index++)
+        {
+          $ratingContainer.append('<div class="rating-circle"></div>');
+        }
+      }
+
+      function showSavedNotification(data)
+      {
+        $('#output').text(data.message);
+      }
+
+      function setRating(ratingType, circleCount, saved)
+      {
+        if (saved)
+        {
+          $ratingContainer.attr('set-value', circleCount + 1);
+        }
+
+        for (var index = 0; index <= circleCount; index++)
+        {
+          var curentCircle = $($ratingContainer.children().get(index));
+          curentCircle.addClass(ratingType);
+        }
+      }
+
+    });
+  </script>
+
+</body>
+</html>
