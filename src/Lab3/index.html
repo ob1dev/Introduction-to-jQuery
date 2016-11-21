@@ -79,10 +79,7 @@
           maxValue: $ratingContainer.attr('max-value')
         };
 
-        $.post(url, rating, function (data)
-        {
-          $('#output').text(data.message);
-        });
+        $.post(url, rating, showSavedNotification);
 
       });
 
